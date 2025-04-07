@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <title>Superseed</title>
     <style>
-        body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #111; }
+        body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #1a2a2a; }
         #game-container { position: relative; }
-        #ui { position: absolute; top: 10px; left: 10px; color: #0f0; font-family: monospace; }
-        #tooltip { position: absolute; color: #0f0; background: rgba(0, 0, 0, 0.8); padding: 5px; display: none; }
-        #mutation-menu { position: absolute; top: 10px; right: 10px; color: #0f0; background: rgba(0, 0, 0, 0.8); padding: 10px; display: none; }
+        #ui { position: absolute; top: 10px; left: 10px; color: #00ff00; font-family: monospace; text-shadow: 0 0 5px #00ff00; }
+        #tooltip { position: absolute; color: #00ff00; background: rgba(0, 20, 20, 0.8); padding: 5px; display: none; border: 1px solid #00ff00; }
+        #mutation-menu { position: absolute; top: 10px; right: 10px; color: #00ff00; background: rgba(0, 20, 20, 0.8); padding: 10px; display: none; border: 1px solid #00ff00; }
+        button { background: #0a3a3a; color: #00ff00; border: 1px solid #00ff00; padding: 5px; cursor: pointer; font-family: monospace; }
+        button:hover { background: #0a5a5a; }
     </style>
 </head>
 <body>
@@ -39,21 +41,61 @@
         };
 
         const game = new Phaser.Game(config);
-        let scene, seed, components = [], energy = 50, progress = 0, energyRegen = 0.1, spreadCost = 10, spreadRange = 150;
-        let antivirusActive = false, mutations = [], autoSpreadTimer = 0;
+        let scene, seed, components = [], tendrils = [], overgrowthSeeds = [], energy = 50, progress = 0, energyRegen = 0.1, spreadCost = 10, spreadRange = 150;
+        let antivirusActive = false, mutations = [], autoSpreadTimer = 0, overgrowthTimer = 0;
 
         function preload() {
-            this.load.image('seed', 'https://via.placeholder.com/20/00ff00');
-            this.load.image('seed2', 'https://via.placeholder.com/25/00cc00');
-            this.load.image('component', 'https://via.placeholder.com/50/666666');
-            this.load.image('bloomed', 'https://via.placeholder.com/50/00ff00');
+            // Placeholder assets (to be replaced with hand-drawn sprites)
+            this.load.image('component', 'https://via.placeholder.com/50/333333');
+            this.load.image('bloomed', 'https://via.placeholder.com/50/00aa00');
             this.load.image('antivirus', 'https://via.placeholder.com/30/ff0000');
             this.load.audio('bloom', 'https://freesound.org/data/previews/270/270131_2018099-lq.mp3');
             this.load.audio('attack', 'https://freesound.org/data/previews/270/270129_2018099-lq.mp3');
         }
 
         function create() {
-            scene = this; // Store the scene context
+            scene = this;
+
+            // Background: Circuit-like pattern
+            let graphics = scene.add.graphics();
+            graphics.lineStyle(1, 0x00ff00, 0.2);
+            for (let x = 0; x < 800; x += 50) {
+                graphics.moveTo(x, 0);
+                graphics.lineTo(x, 600);
+            }
+            for (let y = 0; y < 600; y += 50) {
+                graphics.moveTo(0, y);
+                graphics.lineTo(800, y);
+            }
+            graphics.strokePath();
+
+            // Draw the Superseed symbol as the seed sprite
+            let seedGraphics = scene.add.graphics();
+            seedGraphics.lineStyle(2, 0x00ff00, 1);
+            seedGraphics.strokeCircle(0, 0, 10);
+            for (let i = 0; i < 8; i++) {
+                let angle = (i / 8) * Math.PI * 2;
+                seedGraphics.lineBetween(0, 0, Math.cos(angle) * 8, Math.sin(angle) * 8);
+            }
+            seedGraphics.generateTexture('seed', 32, 32);
+            seedGraphics.clear();
+
+            // Evolved seed with tendrils
+            let seed2Graphics = scene.add.graphics();
+            seed2Graphics.lineStyle(2, 0x00cc00, 1);
+            seed2Graphics.strokeCircle(0, 0, 12);
+            for (let i = 0; i < 8; i++) {
+                let angle = (i / 8) * Math.PI * 2;
+                seed2Graphics.lineBetween(0, 0, Math.cos(angle) * 10, Math.sin(angle) * 10);
+                if (i % 2 === 0) {
+                    let endX = Math.cos(angle) * 15;
+                    let endY = Math.sin(angle) * 15;
+                    seed2Graphics.lineBetween(Math.cos(angle) * 10, Math.sin(angle) * 10, endX, endY);
+                }
+            }
+            seed2Graphics.generateTexture('seed2', 40, 40);
+            seed2Graphics.clear();
+
             const grid = [
                 ['Power Supply', 'Motherboard', 'CPU'],
                 ['RAM', 'GPU', 'Cooling Fan'],
@@ -96,6 +138,15 @@
                     component.setTexture('bloomed');
                     component.setData('bloomed', true);
                     progress += 5;
+
+                    // Draw tendril path
+                    let tendril = scene.add.graphics();
+                    tendril.lineStyle(2, 0x00ff00, 1);
+                    tendril.beginPath();
+                    tendril.moveTo(seed.x, seed.y);
+                    tendril.lineTo(component.x, component.y);
+                    tendril.strokePath();
+                    tendrils.push(tendril);
 
                     scene.tweens.add({
                         targets: component,
@@ -151,12 +202,13 @@
                 let bloomed = components.filter(c => c.getData('bloomed') && !c.getData('defended'));
                 if (bloomed.length > 0) {
                     let target = bloomed[Math.floor(Math.random() * bloomed.length)];
-                    scene.add.sprite(target.x, target.y, 'antivirus').setDepth(1);
+                    let av = scene.add.sprite(seed.x, seed.y, 'antivirus').setDepth(1);
                     scene.sounds.attack.play();
                     scene.tweens.add({
-                        targets: target,
-                        alpha: 0.5,
-                        duration: 1000,
+                        targets: av,
+                        x: target.x,
+                        y: target.y,
+                        duration: 2000,
                         onComplete: () => {
                             if (!target.getData('defended')) {
                                 target.setTexture('component');
@@ -165,6 +217,7 @@
                                 updateUI();
                                 if (progress < 10 && antivirusActive) showEndScreen(scene, false);
                             }
+                            av.destroy();
                         }
                     });
                 }
@@ -183,6 +236,31 @@
                 });
                 updateUI();
             }
+        }
+
+        function spawnOvergrowth(scene) {
+            let bloomed = components.filter(c => c.getData('bloomed'));
+            bloomed.forEach(comp => {
+                if (Math.random() < 0.1) { // 10% chance per component
+                    let miniSeed = scene.add.sprite(comp.x, comp.y, 'seed').setScale(0.5);
+                    overgrowthSeeds.push(miniSeed);
+                    let nearby = components.filter(c => !c.getData('bloomed') && Phaser.Math.Distance.Between(comp.x, comp.y, c.x, c.y) <= 100);
+                    if (nearby.length > 0) {
+                        let target = nearby[0];
+                        scene.tweens.add({
+                            targets: miniSeed,
+                            x: target.x,
+                            y: target.y,
+                            duration: 3000,
+                            onComplete: () => {
+                                trySpread(scene, target);
+                                miniSeed.destroy();
+                                overgrowthSeeds = overgrowthSeeds.filter(s => s !== miniSeed);
+                            }
+                        });
+                    }
+                }
+            });
         }
 
         function showTooltip(component) {
@@ -226,10 +304,10 @@
             scene.scene.pause();
             scene.add.text(400, 300, won ? 'Victory!\nSystem Fully Bloomed' : 'Game Over\nSystem Lost', {
                 fontSize: '32px',
-                color: '#0f0',
+                color: '#00ff00',
                 align: 'center'
             }).setOrigin(0.5);
-            scene.add.text(400, 400, 'Refresh to Restart', { fontSize: '16px', color: '#0f0' }).setOrigin(0.5);
+            scene.add.text(400, 400, 'Refresh to Restart', { fontSize: '16px', color: '#00ff00' }).setOrigin(0.5);
         }
 
         function updateUI() {
@@ -249,6 +327,11 @@
                     if (unbloomed.length > 0) trySpread(scene, unbloomed[0]);
                     autoSpreadTimer = 0;
                 }
+            }
+            overgrowthTimer += 1 / 60;
+            if (overgrowthTimer >= 10) {
+                spawnOvergrowth(scene);
+                overgrowthTimer = 0;
             }
         }
     </script>
