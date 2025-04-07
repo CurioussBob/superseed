@@ -1,0 +1,273 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.5">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.3px Courier; -webkit-text-stroke: #000000}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.3px Courier; -webkit-text-stroke: #000000; min-height: 16.0px}
+    span.s1 {font-kerning: none}
+  </style>
+</head>
+<body>
+<p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
+<p class="p1"><span class="s1">&lt;html lang="en"&gt;</span></p>
+<p class="p1"><span class="s1">&lt;head&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;title&gt;Superseed&lt;/title&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;style&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #111; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#game-container { position: relative; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#ui { position: absolute; top: 10px; left: 10px; color: #0f0; font-family: monospace; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#tooltip { position: absolute; color: #0f0; background: rgba(0, 0, 0, 0.8); padding: 5px; display: none; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#mutation-menu { position: absolute; top: 10px; right: 10px; color: #0f0; background: rgba(0, 0, 0, 0.8); padding: 10px; display: none; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/head&gt;</span></p>
+<p class="p1"><span class="s1">&lt;body&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div id="game-container"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div id="ui"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;p&gt;Energy: &lt;span id="energy"&gt;50&lt;/span&gt;&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;p&gt;System Bloom: &lt;span id="progress"&gt;0%&lt;/span&gt;&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;p&gt;&lt;button onclick="toggleMutationMenu()"&gt;Mutations&lt;/button&gt;&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div id="tooltip"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div id="mutation-menu"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;h3&gt;Mutations&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;ul id="mutation-list"&gt;&lt;/ul&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"&gt;&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const config = {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>type: Phaser.AUTO,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>width: 800,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>height: 600,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>parent: 'game-container',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>scene: {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>preload: preload,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>create: create,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>update: update</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const game = new Phaser.Game(config);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let seed, components = [], energy = 50, progress = 0, energyRegen = 0.1, spreadCost = 10, spreadRange = 150;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let antivirusActive = false, mutations = [], autoSpreadTimer = 0;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function preload() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>// Simulated sprites (replace with real assets)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>this.load.image('seed', 'https://via.placeholder.com/20/00ff00');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>this.load.image('seed2', 'https://via.placeholder.com/25/00cc00');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>this.load.image('component', 'https://via.placeholder.com/50/666666');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>this.load.image('bloomed', 'https://via.placeholder.com/50/00ff00');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>this.load.image('antivirus', 'https://via.placeholder.com/30/ff0000');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>this.load.audio('bloom', 'https://freesound.org/data/previews/270/270131_2018099-lq.mp3'); // Placeholder sound</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>this.load.audio('attack', 'https://freesound.org/data/previews/270/270129_2018099-lq.mp3');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function create() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const grid = [</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>['Power Supply', 'Motherboard', 'CPU'],</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>['RAM', 'GPU', 'Cooling Fan'],</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>['USB', 'Hard Drive', null]</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>];</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>for (let y = 0; y &lt; 3; y++) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>for (let x = 0; x &lt; 3; x++) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>if (grid[y][x]) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>let comp = this.add.sprite(200 + x * 100, 200 + y * 100, 'component')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>.setInteractive()</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>.setData('name', grid[y][x])</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>.setData('bloomed', false)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>.setData('defended', false);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>components.push(comp);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>comp.on('pointerdown', () =&gt; trySpread(comp));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>comp.on('pointerup', (pointer) =&gt; { if (pointer.rightButtonReleased()) defendComponent(comp); });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>comp.on('pointerover', () =&gt; showTooltip(comp));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>comp.on('pointerout', () =&gt; hideTooltip());</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>seed = this.add.sprite(200, 400, 'seed').setInteractive();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>seed.setData('bloomed', true);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>updateUI();</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>this.time.addEvent({ delay: 10000, callback: spawnAntivirus, callbackScope: this, loop: true });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>this.sounds = {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>bloom: this.sound.add('bloom'),</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>attack: this.sound.add('attack')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function trySpread(component) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (energy &gt;= spreadCost &amp;&amp; !component.getData('bloomed')) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>let distance = Phaser.Math.Distance.Between(seed.x, seed.y, component.x, component.y);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (distance &lt;= spreadRange) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>energy -= spreadCost;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>component.setTexture('bloomed');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>component.setData('bloomed', true);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>progress += 5;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>this.tweens.add({</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>targets: component,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>scale: 1.2,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>alpha: 0.8,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>duration: 500,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>yoyo: true,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>onComplete: () =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>applyBonus(component);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>this.sounds.bloom.play();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>});</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>if (progress &gt;= 25 &amp;&amp; seed.texture.key === 'seed') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>seed.setTexture('seed2');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>if (component.getData('name') === 'Motherboard' &amp;&amp; energy &gt;= spreadCost) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>let nearby = components.filter(c =&gt; !c.getData('bloomed') &amp;&amp; Phaser.Math.Distance.Between(component.x, component.y, c.x, c.y) &lt;= spreadRange);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>if (nearby.length &gt; 0) trySpread(nearby[0]);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>updateUI();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>seed.x = component.x;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>seed.y = component.y;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>if (progress &gt;= 50 &amp;&amp; !antivirusActive) antivirusActive = true;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>if (progress &gt;= 100) showEndScreen(true);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function applyBonus(component) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const name = component.getData('name');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>switch (name) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>case 'CPU': energyRegen = 0.3; break;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>case 'Power Supply': energy = Math.min(100, energy + 25); break;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>case 'RAM': spreadCost = 8; break;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>case 'GPU': component.setTint(0x00ff00); break;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>case 'Cooling Fan': spreadRange = 200; spreadCost = 15; break;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>case 'Motherboard': break;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>case 'Hard Drive':</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>if (!mutations.includes('Regen Boost')) mutations.push('Regen Boost');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>else if (!mutations.includes('Auto-Spread')) mutations.push('Auto-Spread');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>else if (!mutations.includes('AV Resistance')) mutations.push('AV Resistance');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>updateMutationMenu();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>break;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function spawnAntivirus() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (antivirusActive &amp;&amp; !mutations.includes('AV Resistance')) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>let bloomed = components.filter(c =&gt; c.getData('bloomed') &amp;&amp; !c.getData('defended'));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (bloomed.length &gt; 0) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>let target = bloomed[Math.floor(Math.random() * bloomed.length)];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>this.add.sprite(target.x, target.y, 'antivirus').setDepth(1);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>this.sounds.attack.play();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>this.tweens.add({</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>targets: target,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>alpha: 0.5,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>duration: 1000,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>onComplete: () =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>if (!target.getData('defended')) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>target.setTexture('component');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>target.setData('bloomed', false);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>progress -= 5;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>updateUI();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>if (progress &lt; 10 &amp;&amp; antivirusActive) showEndScreen(false);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function defendComponent(component) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (energy &gt;= 20 &amp;&amp; component.getData('bloomed') &amp;&amp; !component.getData('defended')) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>energy -= 20;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>component.setData('defended', true);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>this.tweens.add({</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>targets: component,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>tint: 0x0000ff,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>duration: 5000,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>onComplete: () =&gt; component.setData('defended', false)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>updateUI();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function showTooltip(component) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>let tooltip = document.getElementById('tooltip');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>let bonus = {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>'CPU': 'Faster Energy Regen',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>'Power Supply': '+25 Energy',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>'RAM': 'Cheaper Spread',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>'GPU': 'Visual Glow',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>'Cooling Fan': 'Longer Range, Higher Cost',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>'Motherboard': 'Multi-Spread',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>'Hard Drive': 'Unlocks Mutation'</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}[component.getData('name')] || 'No Bonus';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>tooltip.style.display = 'block';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>tooltip.style.left = `${component.x + 10}px`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>tooltip.style.top = `${component.y + 10}px`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>tooltip.textContent = `${component.getData('name')}: ${bonus}`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function hideTooltip() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>document.getElementById('tooltip').style.display = 'none';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function toggleMutationMenu() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>let menu = document.getElementById('mutation-menu');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>menu.style.display = menu.style.display === 'none' ? 'block' : 'none';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function updateMutationMenu() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>let list = document.getElementById('mutation-list');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>list.innerHTML = '';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>mutations.forEach(m =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>let li = document.createElement('li');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>li.textContent = m;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>list.appendChild(li);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>updateUI();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function showEndScreen(won) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>this.scene.pause();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>let text = this.add.text(400, 300, won ? 'Victory!\nSystem Fully Bloomed' : 'Game Over\nSystem Lost', {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>fontSize: '32px',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>color: '#0f0',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>align: 'center'</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}).setOrigin(0.5);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>this.add.text(400, 400, 'Refresh to Restart', { fontSize: '16px', color: '#0f0' }).setOrigin(0.5);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function updateUI() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>document.getElementById('energy').textContent = Math.floor(energy);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>document.getElementById('progress').textContent = `${progress}%`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function update() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (energy &lt; 100) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>energy += energyRegen + (mutations.includes('Regen Boost') ? 0.2 : 0);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>updateUI();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (mutations.includes('Auto-Spread')) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>autoSpreadTimer += 1 / 60; // Assuming 60 FPS</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (autoSpreadTimer &gt;= 5) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>let unbloomed = components.filter(c =&gt; !c.getData('bloomed') &amp;&amp; Phaser.Math.Distance.Between(seed.x, seed.y, c.x, c.y) &lt;= spreadRange);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>if (unbloomed.length &gt; 0) trySpread(unbloomed[0]);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>autoSpreadTimer = 0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+</body>
+</html>
